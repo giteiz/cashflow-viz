@@ -1,11 +1,14 @@
 from fastapi import FastAPI, HTTPException, Depends
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 from typing import List, Optional
 from datetime import datetime
 import sqlite3
 import json
 import os
+import io
+import csv
 
 app = FastAPI(title="CashFlow API", version="1.0.0")
 
@@ -17,7 +20,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-DB_PATH = os.path.expanduser("~/projects/cashflow-viz/backend/data.db")
+DB_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data.db")
 os.makedirs(os.path.dirname(DB_PATH), exist_ok=True)
 
 def get_db():
@@ -216,6 +219,36 @@ def calculate(scenario: ScenarioCreate):
     from cashflow_engine import calculate_cashflow
     result = calculate_cashflow(scenario.dict())
     return result
+
+@app.post("/api/export/csv")
+def export_csv(scenario: ScenarioCreate):
+    from cashflow_engine import calculate_cashflow
+    result = calculate_cashflow(scenario.dict())
+    
+    output = io.StringIO()
+    writer = csv.writer(output)
+    writer.writerow(['日期', '标签', '累计余额', '当期净现金流', '收入', '支出'])
+    for p in result['points']:
+        writer.writerow([
+            p['date'],
+            p['label'],
+            p['cumulative_balance'],
+            p['periodic_net'],
+            p['income'],
+            p['expense']
+        ])
+    
+    output.seek(0)
+    filename = f"cashflow_{scenario.name}_{datetime.now().strftime('%Y%m%d')}.csv"
+    return StreamingResponse(
+        io.BytesIO(output.getvalue().encode('utf-8-sig')),
+        media_type="text/csv",
+        headers={"Content-Disposition": f"attachment; filename={filename}"}
+    )
+
+@app.post("/api/export/png")
+def export_png():
+    raise HTTPException(status_code=501, detail="PNG export is only supported on the frontend")
 
 if __name__ == "__main__":
     import uvicorn

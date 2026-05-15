@@ -162,8 +162,8 @@ const ItemManager: React.FC<ItemManagerProps> = ({ items, onAdd, onUpdate, onDel
       </div>
 
       {isAdding && (
-        <div className="modal-overlay" onClick={() => setIsAdding(false)}>
-          <div className="modal" onClick={(e) => e.stopPropagation()}>
+        <div className="modal-overlay">
+          <div className="modal">
             <div className="modal-header">
               <div className="modal-title">添加收支项目</div>
               <button className="close-btn" onClick={() => setIsAdding(false)}>×</button>
@@ -178,8 +178,8 @@ const ItemManager: React.FC<ItemManagerProps> = ({ items, onAdd, onUpdate, onDel
       )}
 
       {editingId && editForm && (
-        <div className="modal-overlay" onClick={handleCancelEdit}>
-          <div className="modal" onClick={(e) => e.stopPropagation()}>
+        <div className="modal-overlay">
+          <div className="modal">
             <div className="modal-header">
               <div className="modal-title">编辑收支项目</div>
               <button className="close-btn" onClick={handleCancelEdit}>×</button>

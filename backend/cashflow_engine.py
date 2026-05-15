@@ -1,3 +1,4 @@
+import calendar
 from datetime import datetime, timedelta
 from typing import List, Dict, Any
 import math
@@ -64,16 +65,20 @@ def calculate_cashflow(scenario: Dict[str, Any]) -> Dict[str, Any]:
         "total_expense": round(total_expense, 2),
     }
 
+def add_months(date: datetime, months: int) -> datetime:
+    month = date.month - 1 + months
+    year = date.year + month // 12
+    month = month % 12 + 1
+    day = min(date.day, calendar.monthrange(year, month)[1])
+    return date.replace(year=year, month=month, day=day)
+
 def calculate_end_date(start: datetime, unit: str, range_val: int) -> datetime:
     if unit == "day":
         return start + timedelta(days=range_val)
     elif unit == "week":
         return start + timedelta(weeks=range_val)
     elif unit == "month":
-        month = start.month + range_val
-        year = start.year + (month - 1) // 12
-        month = ((month - 1) % 12) + 1
-        return start.replace(year=year, month=month)
+        return add_months(start, range_val)
     elif unit == "year":
         return start.replace(year=start.year + range_val)
     return start
@@ -96,10 +101,7 @@ def advance_date(date: datetime, unit: str) -> datetime:
     elif unit == "week":
         return date + timedelta(weeks=1)
     elif unit == "month":
-        month = date.month + 1
-        year = date.year + (month - 1) // 12
-        month = ((month - 1) % 12) + 1
-        return date.replace(year=year, month=month)
+        return add_months(date, 1)
     elif unit == "year":
         return date.replace(year=date.year + 1)
     return date
@@ -170,7 +172,8 @@ def calculate_installment_payment(inst: Dict[str, Any], current_date: datetime) 
     if month_diff < 0 or month_diff >= inst["periods"]:
         return 0
     
-    if current_date.day != start.day:
+    target_day = min(start.day, calendar.monthrange(current_date.year, current_date.month)[1])
+    if current_date.day != target_day:
         return 0
     
     payment = inst["totalAmount"] / inst["periods"]

@@ -21,6 +21,7 @@ interface DashboardProps {
   onDeleteInstallment: (id: string) => void
   onCreateScenario: (name: string) => void
   onSwitchScenario: (id: string) => void
+  onDeleteScenario: (id: string) => void
 }
 
 const Dashboard: React.FC<DashboardProps> = ({
@@ -37,6 +38,7 @@ const Dashboard: React.FC<DashboardProps> = ({
   onDeleteInstallment,
   onCreateScenario,
   onSwitchScenario,
+  onDeleteScenario,
 }) => {
   return (
     <div className="container">
@@ -54,6 +56,7 @@ const Dashboard: React.FC<DashboardProps> = ({
         currentId={currentScenarioId}
         onSwitch={onSwitchScenario}
         onCreate={onCreateScenario}
+        onDelete={onDeleteScenario}
       />
 
       <BalanceCard

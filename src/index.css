@@ -205,6 +205,24 @@ body {
   overflow-y: auto;
 }
 
+.modal-sm {
+  max-width: 420px;
+  padding: 24px;
+}
+
+.modal-body {
+  color: #4b5563;
+  font-size: 15px;
+  line-height: 1.6;
+  margin-bottom: 24px;
+}
+
+.modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
 .modal-header {
   display: flex;
   justify-content: space-between;

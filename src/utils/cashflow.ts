@@ -97,11 +97,20 @@ export function calculateCashFlow(scenario: Scenario): CashFlowData {
   }
 }
 
+function parseLocalDate(dateStr: string): Date {
+  const [y, m, d] = dateStr.split('-').map(Number)
+  return new Date(y, m - 1, d)
+}
+
+function getDaysInMonth(year: number, month: number): number {
+  return new Date(year, month + 1, 0).getDate()
+}
+
 function calculateItemAmount(item: CashFlowItem, currentDate: Date): number {
-  const itemStart = new Date(item.startDate)
+  const itemStart = parseLocalDate(item.startDate)
   
   if (currentDate < itemStart) return 0
-  if (item.endDate && currentDate > new Date(item.endDate)) return 0
+  if (item.endDate && currentDate > parseLocalDate(item.endDate)) return 0
   if (item.occurrences !== undefined) {
     const occurrences = countOccurrences(item, currentDate)
     if (occurrences > item.occurrences) return 0
@@ -116,7 +125,7 @@ function calculateItemAmount(item: CashFlowItem, currentDate: Date): number {
 }
 
 function isOccurrenceDate(item: CashFlowItem, date: Date): boolean {
-  const start = new Date(item.startDate)
+  const start = parseLocalDate(item.startDate)
   
   switch (item.period) {
     case 'daily':
@@ -145,7 +154,7 @@ function isOccurrenceDate(item: CashFlowItem, date: Date): boolean {
 
 function countOccurrences(item: CashFlowItem, untilDate: Date): number {
   let count = 0
-  const start = new Date(item.startDate)
+  const start = parseLocalDate(item.startDate)
   const current = new Date(start)
   
   while (current <= untilDate) {
@@ -176,7 +185,7 @@ function isQuarterlyMatch(start: Date, date: Date, periodDay?: number): boolean 
 }
 
 function calculateInstallmentPayment(installment: Installment, currentDate: Date): number {
-  const start = new Date(installment.startDate)
+  const start = parseLocalDate(installment.startDate)
   if (currentDate < start) return 0
   
   const monthDiff = (currentDate.getFullYear() - start.getFullYear()) * 12 + 
@@ -184,8 +193,10 @@ function calculateInstallmentPayment(installment: Installment, currentDate: Date
   
   if (monthDiff < 0 || monthDiff >= installment.periods) return 0
   
-  // 检查是否是还款日（每月同一天）
-  if (currentDate.getDate() !== start.getDate()) return 0
+  // 检查是否是还款日（每月同一天，若该月没有该日期则取最后一天）
+  const daysInMonth = getDaysInMonth(currentDate.getFullYear(), currentDate.getMonth())
+  const targetDay = Math.min(start.getDate(), daysInMonth)
+  if (currentDate.getDate() !== targetDay) return 0
   
   let payment = installment.totalAmount / installment.periods
   

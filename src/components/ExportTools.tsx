@@ -1,5 +1,6 @@
 import React from 'react'
 import { CashFlowData, Scenario } from '../types'
+import { api } from '../utils/api'
 
 interface ExportToolsProps {
   data: CashFlowData | null
@@ -7,29 +8,19 @@ interface ExportToolsProps {
 }
 
 const ExportTools: React.FC<ExportToolsProps> = ({ data, scenario }) => {
-  const handleExportCSV = () => {
+  const handleExportCSV = async () => {
     if (!data) return
-
-    const headers = ['日期', '标签', '累计余额', '当期净现金流', '收入', '支出']
-    const rows = data.points.map(p => [
-      p.date,
-      p.label,
-      p.cumulativeBalance,
-      p.periodicNet,
-      p.income,
-      p.expense
-    ])
-
-    const csvContent = [
-      headers.join(','),
-      ...rows.map(r => r.join(','))
-    ].join('\n')
-
-    const blob = new Blob(['\ufeff' + csvContent], { type: 'text/csv;charset=utf-8;' })
-    const link = document.createElement('a')
-    link.href = URL.createObjectURL(blob)
-    link.download = `现金流_${scenario.name}_${new Date().toISOString().split('T')[0]}.csv`
-    link.click()
+    try {
+      const res = await api.exportCSV(scenario)
+      const blob = new Blob([res.data], { type: 'text/csv;charset=utf-8;' })
+      const link = document.createElement('a')
+      link.href = URL.createObjectURL(blob)
+      link.download = `现金流_${scenario.name}_${new Date().toISOString().split('T')[0]}.csv`
+      link.click()
+    } catch (err) {
+      console.error('导出 CSV 失败:', err)
+      alert('导出失败，请稍后重试')
+    }
   }
 
   const handleExportPNG = () => {

@@ -160,8 +160,8 @@ const InstallmentManager: React.FC<InstallmentManagerProps> = ({ installments, o
       </div>
 
       {isAdding && (
-        <div className="modal-overlay" onClick={() => setIsAdding(false)}>
-          <div className="modal" onClick={(e) => e.stopPropagation()}>
+        <div className="modal-overlay">
+          <div className="modal">
             <div className="modal-header">
               <div className="modal-title">添加分期还款</div>
               <button className="close-btn" onClick={() => setIsAdding(false)}>×</button>
@@ -186,8 +186,8 @@ const InstallmentManager: React.FC<InstallmentManagerProps> = ({ installments, o
       )}
 
       {editingId && editForm && (
-        <div className="modal-overlay" onClick={handleCancelEdit}>
-          <div className="modal" onClick={(e) => e.stopPropagation()}>
+        <div className="modal-overlay">
+          <div className="modal">
             <div className="modal-header">
               <div className="modal-title">编辑分期还款</div>
               <button className="close-btn" onClick={handleCancelEdit}>×</button>
