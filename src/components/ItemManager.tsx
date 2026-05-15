@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import { useState } from 'react'
 import { CashFlowItem } from '../types'
 
 interface ItemManagerProps {
@@ -22,6 +22,7 @@ const ItemManager: React.FC<ItemManagerProps> = ({ items, onAdd, onUpdate, onDel
   const [isAdding, setIsAdding] = useState(false)
   const [newItem, setNewItem] = useState(emptyItem)
   const [editingId, setEditingId] = useState<string | null>(null)
+  const [editForm, setEditForm] = useState<CashFlowItem | null>(null)
 
   const handleAdd = () => {
     if (newItem.name && newItem.amount > 0) {
@@ -30,6 +31,126 @@ const ItemManager: React.FC<ItemManagerProps> = ({ items, onAdd, onUpdate, onDel
       setIsAdding(false)
     }
   }
+
+  const handleEdit = (item: CashFlowItem) => {
+    setEditingId(item.id)
+    setEditForm({ ...item })
+  }
+
+  const handleSaveEdit = () => {
+    if (editForm && editForm.name && editForm.amount > 0) {
+      onUpdate(editForm.id, editForm)
+      setEditingId(null)
+      setEditForm(null)
+    }
+  }
+
+  const handleCancelEdit = () => {
+    setEditingId(null)
+    setEditForm(null)
+  }
+
+  const renderFormFields = (
+    data: any,
+    setData: (d: any) => void
+  ) => (
+    <>
+      <div className="form-row">
+        <div className="form-group">
+          <label className="form-label">项目名称</label>
+          <input
+            type="text"
+            className="form-input"
+            value={data.name}
+            onChange={(e) => setData({ ...data, name: e.target.value })}
+            placeholder="如：工资、房租"
+          />
+        </div>
+        <div className="form-group">
+          <label className="form-label">类型</label>
+          <select
+            className="form-select"
+            value={data.type}
+            onChange={(e) => setData({ ...data, type: e.target.value as 'income' | 'expense' })}
+          >
+            <option value="income">收入</option>
+            <option value="expense">支出</option>
+          </select>
+        </div>
+        <div className="form-group">
+          <label className="form-label">金额（元）</label>
+          <input
+            type="number"
+            className="form-input"
+            value={data.amount}
+            onChange={(e) => setData({ ...data, amount: parseFloat(e.target.value) || 0 })}
+          />
+        </div>
+      </div>
+      <div className="form-row">
+        <div className="form-group">
+          <label className="form-label">周期</label>
+          <select
+            className="form-select"
+            value={data.period}
+            onChange={(e) => setData({ ...data, period: e.target.value as CashFlowItem['period'] })}
+          >
+            <option value="daily">每天</option>
+            <option value="weekly">每周</option>
+            <option value="biweekly">隔周</option>
+            <option value="monthly">每月</option>
+            <option value="bimonthly">隔月</option>
+            <option value="quarterly">每季度</option>
+            <option value="yearly">每年</option>
+            <option value="custom">自定义天数</option>
+          </select>
+        </div>
+        {data.period === 'custom' && (
+          <div className="form-group">
+            <label className="form-label">间隔天数</label>
+            <input
+              type="number"
+              className="form-input"
+              value={data.customDays || ''}
+              onChange={(e) => setData({ ...data, customDays: parseInt(e.target.value) || 0 })}
+            />
+          </div>
+        )}
+        {data.period === 'monthly' && (
+          <div className="form-group">
+            <label className="form-label">每月几号</label>
+            <input
+              type="number"
+              className="form-input"
+              value={data.periodDay}
+              min={1}
+              max={31}
+              onChange={(e) => setData({ ...data, periodDay: parseInt(e.target.value) || 1 })}
+            />
+          </div>
+        )}
+        <div className="form-group">
+          <label className="form-label">开始日期</label>
+          <input
+            type="date"
+            className="form-input"
+            value={data.startDate}
+            onChange={(e) => setData({ ...data, startDate: e.target.value })}
+          />
+        </div>
+        <div className="form-group">
+          <label className="form-label">发生次数（可选）</label>
+          <input
+            type="number"
+            className="form-input"
+            value={data.occurrences || ''}
+            placeholder="留空表示无限"
+            onChange={(e) => setData({ ...data, occurrences: e.target.value ? parseInt(e.target.value) : undefined })}
+          />
+        </div>
+      </div>
+    </>
+  )
 
   return (
     <div className="card">
@@ -41,104 +162,33 @@ const ItemManager: React.FC<ItemManagerProps> = ({ items, onAdd, onUpdate, onDel
       </div>
 
       {isAdding && (
-        <div style={{ marginBottom: '20px', padding: '16px', background: '#f9fafb', borderRadius: '8px' }}>
-          <div className="form-row">
-            <div className="form-group">
-              <label className="form-label">项目名称</label>
-              <input
-                type="text"
-                className="form-input"
-                value={newItem.name}
-                onChange={(e) => setNewItem({ ...newItem, name: e.target.value })}
-                placeholder="如：工资、房租"
-              />
+        <div className="modal-overlay" onClick={() => setIsAdding(false)}>
+          <div className="modal" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <div className="modal-title">添加收支项目</div>
+              <button className="close-btn" onClick={() => setIsAdding(false)}>×</button>
             </div>
-            <div className="form-group">
-              <label className="form-label">类型</label>
-              <select
-                className="form-select"
-                value={newItem.type}
-                onChange={(e) => setNewItem({ ...newItem, type: e.target.value as 'income' | 'expense' })}
-              >
-                <option value="income">收入</option>
-                <option value="expense">支出</option>
-              </select>
-            </div>
-            <div className="form-group">
-              <label className="form-label">金额（元）</label>
-              <input
-                type="number"
-                className="form-input"
-                value={newItem.amount}
-                onChange={(e) => setNewItem({ ...newItem, amount: parseFloat(e.target.value) || 0 })}
-              />
+            {renderFormFields(newItem, setNewItem)}
+            <div style={{ display: 'flex', gap: '8px', marginTop: '20px' }}>
+              <button className="btn btn-primary" onClick={handleAdd}>添加</button>
+              <button className="btn btn-secondary" onClick={() => setIsAdding(false)}>取消</button>
             </div>
           </div>
-          <div className="form-row">
-            <div className="form-group">
-              <label className="form-label">周期</label>
-              <select
-                className="form-select"
-                value={newItem.period}
-                onChange={(e) => setNewItem({ ...newItem, period: e.target.value as CashFlowItem['period'] })}
-              >
-                <option value="daily">每天</option>
-                <option value="weekly">每周</option>
-                <option value="biweekly">隔周</option>
-                <option value="monthly">每月</option>
-                <option value="bimonthly">隔月</option>
-                <option value="quarterly">每季度</option>
-                <option value="yearly">每年</option>
-                <option value="custom">自定义天数</option>
-              </select>
+        </div>
+      )}
+
+      {editingId && editForm && (
+        <div className="modal-overlay" onClick={handleCancelEdit}>
+          <div className="modal" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <div className="modal-title">编辑收支项目</div>
+              <button className="close-btn" onClick={handleCancelEdit}>×</button>
             </div>
-            {newItem.period === 'custom' && (
-              <div className="form-group">
-                <label className="form-label">间隔天数</label>
-                <input
-                  type="number"
-                  className="form-input"
-                  value={newItem.customDays || ''}
-                  onChange={(e) => setNewItem({ ...newItem, customDays: parseInt(e.target.value) || 0 })}
-                />
-              </div>
-            )}
-            {newItem.period === 'monthly' && (
-              <div className="form-group">
-                <label className="form-label">每月几号</label>
-                <input
-                  type="number"
-                  className="form-input"
-                  value={newItem.periodDay}
-                  min={1}
-                  max={31}
-                  onChange={(e) => setNewItem({ ...newItem, periodDay: parseInt(e.target.value) || 1 })}
-                />
-              </div>
-            )}
-            <div className="form-group">
-              <label className="form-label">开始日期</label>
-              <input
-                type="date"
-                className="form-input"
-                value={newItem.startDate}
-                onChange={(e) => setNewItem({ ...newItem, startDate: e.target.value })}
-              />
+            {renderFormFields(editForm, setEditForm)}
+            <div style={{ display: 'flex', gap: '8px', marginTop: '20px' }}>
+              <button className="btn btn-primary" onClick={handleSaveEdit}>保存</button>
+              <button className="btn btn-secondary" onClick={handleCancelEdit}>取消</button>
             </div>
-            <div className="form-group">
-              <label className="form-label">发生次数（可选）</label>
-              <input
-                type="number"
-                className="form-input"
-                value={newItem.occurrences || ''}
-                placeholder="留空表示无限"
-                onChange={(e) => setNewItem({ ...newItem, occurrences: e.target.value ? parseInt(e.target.value) : undefined })}
-              />
-            </div>
-          </div>
-          <div style={{ display: 'flex', gap: '8px', marginTop: '12px' }}>
-            <button className="btn btn-primary" onClick={handleAdd}>添加</button>
-            <button className="btn btn-secondary" onClick={() => setIsAdding(false)}>取消</button>
           </div>
         </div>
       )}
@@ -167,9 +217,14 @@ const ItemManager: React.FC<ItemManagerProps> = ({ items, onAdd, onUpdate, onDel
               <td>{formatPeriod(item)}</td>
               <td>{item.startDate}</td>
               <td>
-                <button className="btn btn-danger btn-sm" onClick={() => onDelete(item.id)}>
-                  删除
-                </button>
+                <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
+                  <button className="btn btn-secondary btn-sm" onClick={() => handleEdit(item)}>
+                    编辑
+                  </button>
+                  <button className="btn btn-danger btn-sm" onClick={() => onDelete(item.id)}>
+                    删除
+                  </button>
+                </div>
               </td>
             </tr>
           ))}

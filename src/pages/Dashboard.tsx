@@ -17,6 +17,7 @@ interface DashboardProps {
   onUpdateItem: (id: string, updates: any) => void
   onDeleteItem: (id: string) => void
   onAddInstallment: (installment: any) => void
+  onUpdateInstallment: (id: string, updates: any) => void
   onDeleteInstallment: (id: string) => void
   onCreateScenario: (name: string) => void
   onSwitchScenario: (id: string) => void
@@ -32,6 +33,7 @@ const Dashboard: React.FC<DashboardProps> = ({
   onUpdateItem,
   onDeleteItem,
   onAddInstallment,
+  onUpdateInstallment,
   onDeleteInstallment,
   onCreateScenario,
   onSwitchScenario,
@@ -106,7 +108,7 @@ const Dashboard: React.FC<DashboardProps> = ({
         timeUnit={scenario.timeUnit}
       />
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
         <ItemManager
           items={scenario.items}
           onAdd={onAddItem}
@@ -116,6 +118,7 @@ const Dashboard: React.FC<DashboardProps> = ({
         <InstallmentManager
           installments={scenario.installments}
           onAdd={onAddInstallment}
+          onUpdate={onUpdateInstallment}
           onDelete={onDeleteInstallment}
         />
       </div>

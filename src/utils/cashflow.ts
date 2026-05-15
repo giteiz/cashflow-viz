@@ -32,25 +32,35 @@ export function calculateCashFlow(scenario: Scenario): CashFlowData {
     let income = 0
     let expense = 0
     
-    // 计算常规项目
-    items.forEach(item => {
-      const amount = calculateItemAmount(item, currentDate)
-      if (amount > 0) {
-        if (item.type === 'income') {
-          income += amount
-        } else {
-          expense += amount
-        }
-      }
-    })
+    // 确定当前周期的结束日期（不包含）
+    const periodEnd = new Date(currentDate)
+    advanceDate(periodEnd, timeUnit)
     
-    // 计算分期还款
-    installments.forEach(inst => {
-      const payment = calculateInstallmentPayment(inst, currentDate)
-      if (payment > 0) {
-        expense += payment
-      }
-    })
+    // 遍历周期内的每一天，汇总该周期内所有收支
+    const d = new Date(currentDate)
+    while (d < periodEnd && d <= endDate) {
+      // 计算常规项目
+      items.forEach(item => {
+        const amount = calculateItemAmount(item, d)
+        if (amount > 0) {
+          if (item.type === 'income') {
+            income += amount
+          } else {
+            expense += amount
+          }
+        }
+      })
+      
+      // 计算分期还款
+      installments.forEach(inst => {
+        const payment = calculateInstallmentPayment(inst, d)
+        if (payment > 0) {
+          expense += payment
+        }
+      })
+      
+      d.setDate(d.getDate() + 1)
+    }
     
     const periodicNet = income - expense
     

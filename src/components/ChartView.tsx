@@ -119,19 +119,17 @@ const ChartView: React.FC<ChartViewProps> = ({ data, mode, timeUnit }) => {
           name: '收入',
           type: 'bar',
           data: data.points.map(p => p.income),
-          itemStyle: { color: '#22c55e' },
-          barWidth: '30%',
-          opacity: 0.3
+          itemStyle: { color: '#22c55e', opacity: 0.3 },
+          barWidth: '30%'
         },
         {
           name: '支出',
           type: 'bar',
           data: data.points.map(p => -p.expense),
-          itemStyle: { color: '#ef4444' },
-          barWidth: '30%',
-          opacity: 0.3
+          itemStyle: { color: '#ef4444', opacity: 0.3 },
+          barWidth: '30%'
         }
-      ]
+      ] as any[]
     }
 
     chartInstance.current.setOption(option, true)

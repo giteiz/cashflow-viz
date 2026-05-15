@@ -1,9 +1,8 @@
-import React, { useState, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import { Routes, Route } from 'react-router-dom'
 import Dashboard from './pages/Dashboard'
 import { CashFlowItem, Installment, Scenario, CashFlowData } from './types'
 import { calculateCashFlow } from './utils/cashflow'
-import { api } from './utils/api'
 
 const defaultScenario: Scenario = {
   id: 'default',
@@ -55,6 +54,12 @@ function App() {
     handleUpdateScenario({ installments: [...scenario.installments, installment] })
   }
 
+  const handleUpdateInstallment = (id: string, updates: Partial<Installment>) => {
+    handleUpdateScenario({
+      installments: scenario.installments.map(i => i.id === id ? { ...i, ...updates } : i)
+    })
+  }
+
   const handleDeleteInstallment = (id: string) => {
     handleUpdateScenario({ installments: scenario.installments.filter(i => i.id !== id) })
   }
@@ -94,6 +99,7 @@ function App() {
             onUpdateItem={handleUpdateItem}
             onDeleteItem={handleDeleteItem}
             onAddInstallment={handleAddInstallment}
+            onUpdateInstallment={handleUpdateInstallment}
             onDeleteInstallment={handleDeleteInstallment}
             onCreateScenario={handleCreateScenario}
             onSwitchScenario={handleSwitchScenario}
